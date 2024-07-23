@@ -350,37 +350,42 @@ static void update_external_cc_mux(int port, int cc)
 
 static void epr_flow_pending_deferred(void)
 {
-	static int retry_count;
-
+	int port_idx;
 	/**
 	 * Sometimes, EC does not receive the EPR event/NOT support event from PD chip.
 	 * Retry the last action.
 	 */
+	for (port_idx = 0; port_idx < PD_PORT_COUNT; port_idx++) {
+		if (pd_epr_in_progress & BIT(port_idx)) {
+			if (pd_port_states[port_idx].epr_retry_count > 4) {
+				/* restore the input current limit if we retry 4 times */
+				pd_port_states[port_idx].epr_retry_count = 0;
+				pd_port_states[port_idx].epr_support = 0;
+				pd_epr_in_progress &= EPR_PROCESS_MASK;
+				if (prev_charge_port != -1)
+					cypd_update_port_state((prev_charge_port & 0x02) >> 1,
+						prev_charge_port & BIT(0));
+			}
+			/**
+			 * There is a low risk situation.
+			 * If both the EXIT EPR and ENTER EPR flags are set simultaneously,
+			 * it will cause epr_retry_count to be incremented twice.
+			 */
+			if (pd_epr_in_progress & EXIT_EPR) {
+				CPRINTS("C%d exit EPR stuck, retry!", port_idx);
+				exit_epr_mode();
+				pd_port_states[port_idx].epr_retry_count++;
+			}
 
-	if (!!(pd_epr_in_progress & ~EPR_PROCESS_MASK)) {
-		if (retry_count > 4) {
-			/* restore the input current limit if we retry 4 times */
-			retry_count = 0;
-			pd_epr_in_progress &= EPR_PROCESS_MASK;
-			if (prev_charge_port != -1)
-				cypd_update_port_state((prev_charge_port & 0x02) >> 1,
-					prev_charge_port & BIT(0));
-		}
+			if (pd_epr_in_progress & ENTER_EPR) {
+				CPRINTS("C%d enter EPR stuck, retry!", port_idx);
+				enter_epr_mode();
+				pd_port_states[port_idx].epr_retry_count++;
+			}
 
-		if (pd_epr_in_progress & EXIT_EPR) {
-			CPRINTS("Exit EPR stuck, retry!");
-			exit_epr_mode();
-			retry_count++;
-		}
-
-		if (pd_epr_in_progress & ENTER_EPR) {
-			CPRINTS("enter EPR stuck, retry!");
-			enter_epr_mode();
-			retry_count++;
-		}
-
-	} else
-		retry_count = 0;
+		} else
+			pd_port_states[port_idx].epr_retry_count = 0;
+	}
 }
 DECLARE_DEFERRED(epr_flow_pending_deferred);
 
@@ -1181,6 +1186,7 @@ static void clear_port_state(int controller, int port)
 	pd_port_states[port_idx].vconn = PD_ROLE_VCONN_OFF;
 	pd_port_states[port_idx].epr_active = 0;
 	pd_port_states[port_idx].epr_support = 0;
+	pd_port_states[port_idx].epr_retry_count = 0;
 	pd_port_states[port_idx].cc = POLARITY_CC1;
 	pd_port_states[port_idx].c_state = 0;
 	pd_port_states[port_idx].current = 0;
