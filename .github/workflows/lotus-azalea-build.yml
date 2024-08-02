@@ -8,7 +8,7 @@ on:
       - fwk*
       - framework*
     paths:
-      - 'zephyr/program/lotus/**'
+      - 'zephyr/program/framework/**'
       - '.github/workflows/**'
   #pull_request:
   #  branches:
