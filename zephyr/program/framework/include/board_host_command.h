@@ -430,4 +430,29 @@ struct ec_response_get_cutoff_status {
 	uint8_t status;
 } __ec_align1;
 
+/*****************************************************************************/
+/*
+ * Battery extender control
+ */
+#define EC_CMD_BATTERY_EXTENDER	0x3E24
+
+struct ec_params_battery_extender {
+	uint8_t disable;
+	uint8_t days;
+	uint16_t minutes;
+	uint8_t cmd;
+	uint8_t manual;
+} __ec_align1;
+
+struct ec_response_battery_extender {
+	uint8_t current_stage;
+	uint16_t days;
+	uint16_t minutes;
+} __ec_align1;
+
+enum battery_extender_cmd {
+	BATT_EXTENDER_WRITE_CMD,
+	BATT_EXTENDER_READ_CMD,
+};
+
 #endif /* __BOARD_HOST_COMMAND_H */

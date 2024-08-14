@@ -23,6 +23,9 @@ zephyr_library_sources_ifdef(CONFIG_PLATFORM_EC_LED_COMMON
 zephyr_library_sources_ifdef(CONFIG_PLATFORM_EC_LED_COMMON
 	"src/led.c")
 
+zephyr_library_sources_ifdef(CONFIG_PLATFORM_EC_CHARGE_MANAGER
+	"src/battery_extender.c")
+
 if(DEFINED CONFIG_BOARD_LOTUS)
 	project(lotus)
 	cros_ec_library_include_directories_ifdef(CONFIG_BOARD_LOTUS include)
