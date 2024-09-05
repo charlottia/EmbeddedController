@@ -207,12 +207,19 @@ void reset_prev_disp_charge(void)
 	prev_disp_charge = -1;
 }
 
-static int battery_sustainer_set(int8_t lower, int8_t upper)
+static bool battery_sustainer_enabled(void)
+{
+	return sustain_soc.lower != -1 && sustain_soc.upper != -1;
+}
+
+int battery_sustainer_set(int8_t lower, int8_t upper)
 {
 	if (lower == -1 || upper == -1) {
-		CPRINTS("Sustainer disabled");
-		sustain_soc.lower = -1;
-		sustain_soc.upper = -1;
+		if (battery_sustainer_enabled()) {
+			CPRINTS("Sustainer disabled");
+			sustain_soc.lower = -1;
+			sustain_soc.upper = -1;
+		}
 		return EC_SUCCESS;
 	}
 
@@ -235,14 +242,9 @@ static void battery_sustainer_disable(void)
 	battery_sustainer_set(-1, -1);
 }
 
-static bool battery_sustainer_enabled(void)
-{
-	return sustain_soc.lower != -1 && sustain_soc.upper != -1;
-}
-
 static const char *const state_list[] = { "idle", "discharge", "charge",
 					  "precharge" };
-BUILD_ASSERT(ARRAY_SIZE(state_list) == NUM_STATES_V2);
+BUILD_ASSERT(ARRAY_SIZE(state_list) == CHARGE_STATE_COUNT);
 static const char *const batt_pres[] = {
 	"NO",
 	"YES",
@@ -478,12 +480,6 @@ int charge_request(bool use_curr, bool is_full)
 		voltage = current = 0;
 #endif
 	}
-
-#ifdef CONFIG_CUSTOMIZED_DESIGN
-	/* Override the voltage if the battery extender is on */
-	if (battery_extender_stage_voltage(battery_get_info()->voltage_max))
-		voltage = battery_extender_stage_voltage(battery_get_info()->voltage_max);
-#endif
 
 	if (curr.ac) {
 		if (prev_volt != voltage || prev_curr != current)
@@ -1645,15 +1641,6 @@ void charger_task(void *u)
 		check_battery_change_soc(is_full, prev_full);
 
 		prev_full = is_full;
-
-#ifdef CONFIG_CUSTOMIZED_DESIGN
-		/**
-		 * Run the battery extender function to check the timer,
-		 * if the timer expired, will override the voltage in the
-		 * charge_request() function.
-		 */
-		battery_extender();
-#endif
 
 		adjust_requested_vi(info, is_full);
 
