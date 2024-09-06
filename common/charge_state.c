@@ -244,7 +244,7 @@ static void battery_sustainer_disable(void)
 
 static const char *const state_list[] = { "idle", "discharge", "charge",
 					  "precharge" };
-BUILD_ASSERT(ARRAY_SIZE(state_list) == CHARGE_STATE_COUNT);
+BUILD_ASSERT(ARRAY_SIZE(state_list) == NUM_STATES_V2);
 static const char *const batt_pres[] = {
 	"NO",
 	"YES",
