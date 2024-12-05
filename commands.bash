@@ -5,10 +5,12 @@ set -euxo pipefail
 git submodule init
 git submodule update
 
+# reset
+git submodule foreach 'git clean -ffdx; git checkout .'
+rm -rf venv
+
 python3 -m venv venv
 source venv/bin/activate
-pip install -U pip
-pip install pyyaml pykwalify packaging pyelftools colorama setuptools==68.2.2
 
 sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:'"$(dirname "$(which gcc)"):$(dirname "$(which dtc)")"'","DYLD_LIBRARY_PATH":"'"$(dirname "$(dirname "$(which dtc)")")/lib"'"#'  -i src/platform/ec/zephyr/zmake/zmake/jobserver.py
 pip install src/platform/ec/zephyr/zmake
