@@ -53,33 +53,50 @@
       packages.binman = pythonPkgs.buildPythonPackage {
         name = "binman";
         src = "${u-boot}/tools/binman";
-        pyproject = true;
-
-        buildInputs = [pythonPkgs.setuptools];
-        propagatedBuildInputs = [pythonPkgs.libfdt];
-
-        postPatch = ''
-          #sed -e 's/>=61.0/==68.2.2/' -i pyproject.toml
-          sed -e 's/"pylibfdt"/"libfdt"/' -i pyproject.toml
-          ${setProjectDynamicToLicense}
-        '';
-      };
-
-      packages.dtoc = pythonPkgs.buildPythonPackage {
-        name = "dtoc";
-        src = "${u-boot}/tools/dtoc";
-        pyproject = true;
+        pyproject = false;
+        build-system = [pythonPkgs.setuptools];
 
         buildInputs = [
+          pythonPkgs.pypaBuildHook
+          pythonPkgs.pipInstallHook
+        ];
+        dependencies = [
           pythonPkgs.setuptools
-          pythonPkgs.libfdt
           packages.u_boot_pylib
+          pythonPkgs.libfdt
+          packages.dtoc
         ];
 
         postPatch = ''
           sed -e 's/"pylibfdt"/"libfdt"/' -i pyproject.toml
           ${setProjectDynamicToLicense}
         '';
+
+        makeWrapperArgs = ["--set DYLD_LIBRARY_PATH ${pkgs.dtc}/lib"];
+      };
+
+      packages.dtoc = pythonPkgs.buildPythonPackage {
+        name = "dtoc";
+        src = "${u-boot}/tools/dtoc";
+        pyproject = false;
+        build-system = [pythonPkgs.setuptools];
+
+        buildInputs = [
+          pythonPkgs.pypaBuildHook
+          pythonPkgs.pipInstallHook
+        ];
+
+        dependencies = [
+          packages.u_boot_pylib
+          pythonPkgs.libfdt
+        ];
+
+        postPatch = ''
+          sed -e 's/"pylibfdt"/"libfdt"/' -i pyproject.toml
+          ${setProjectDynamicToLicense}
+        '';
+
+        makeWrapperArgs = ["--set DYLD_LIBRARY_PATH ${pkgs.dtc}/lib"];
       };
 
       packages.u_boot_pylib = pythonPkgs.buildPythonPackage {
