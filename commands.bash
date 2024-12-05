@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
 python3 -m venv venv
 source venv/bin/activate
 pip install -U pip
@@ -14,5 +18,4 @@ sed -e 's/>=61.0/==68.2.2/' -i src/third_party/u-boot/files/tools/binman/pyproje
 sed -e 's/"pylibfdt"/"libfdt"/' -i src/third_party/u-boot/files/tools/binman/pyproject.toml
 pip install src/third_party/u-boot/files/tools/binman
 
-# WIP:
-zmake -j8 build lotus --clobber -DCMAKE_MAKE_PROGRAM=(which ninja) -DGIT_EXECUTABLE=(which git)
+zmake -j8 build lotus -DCMAKE_MAKE_PROGRAM="$(which ninja)" -DGIT_EXECUTABLE="$(which git)"
