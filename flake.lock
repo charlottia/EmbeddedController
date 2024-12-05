@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "ec": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1731467372,
+        "narHash": "sha256-37iKyZdOy8K/a8fsvaTjiC9cTkcP0JbvsfB7t1XAIco=",
+        "owner": "FrameworkComputer",
+        "repo": "EmbeddedController",
+        "rev": "22750754181b9221312a7c0bfd3a1acf5569994c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "FrameworkComputer",
+        "ref": "fwk-lotus-azalea-19573",
+        "repo": "EmbeddedController",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -76,8 +93,10 @@
     },
     "root": {
       "inputs": {
+        "ec": "ec",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
+        "u-boot": "u-boot",
         "zephyr-nix": "zephyr-nix"
       }
     },
@@ -94,6 +113,23 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "u-boot": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1733262716,
+        "narHash": "sha256-h5y0M1dupdO9CNG+OhUYi56UXsWAL5B0PTnhx+gU3FA=",
+        "ref": "upstream/next",
+        "rev": "df863c4aa30ee4e624058f64132b7243c6370ef5",
+        "revCount": 96617,
+        "type": "git",
+        "url": "https://chromium.googlesource.com/chromiumos/third_party/u-boot"
+      },
+      "original": {
+        "ref": "upstream/next",
+        "type": "git",
+        "url": "https://chromium.googlesource.com/chromiumos/third_party/u-boot"
       }
     },
     "zephyr": {
