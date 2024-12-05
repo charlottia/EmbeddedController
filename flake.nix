@@ -95,6 +95,7 @@
     in rec {
       formatter = pkgs.alejandra;
 
+      # TODO: generalise lotus v. azalea
       packages.default = packages.lotus;
       packages.lotus = pkgs.stdenv.mkDerivation {
         name = "lotus";
@@ -113,6 +114,7 @@
 
         sourceRoot = ".";
 
+        # TODO: see how much of the below we can remove and still get a build.
         postPatch = ''
           mkdir .repo
 
@@ -176,7 +178,7 @@
         build-system = [pythonPkgs.setuptools];
 
         # The DYLD_LIBRARY_PATH part here is only needed for Darwin, but it
-        # doesn't harm Linux.
+        # doesn't harm Linux. TODO: don't do on Linux.
         postPatch = ''
           sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:${pkgs.gcc}/bin:${pkgs.dtc}/bin","DYLD_LIBRARY_PATH":"${pkgs.dtc}/lib"#' -i zmake/jobserver.py
         '';
@@ -209,7 +211,9 @@
           ${setProjectDynamicToLicense}
         '';
 
-        makeWrapperArgs = ["--set DYLD_LIBRARY_PATH ${pkgs.dtc}/lib"];
+        # No wrapper => no need for args. I'd like to be able to still do this
+        # to have a nicer binman derivation.
+        # makeWrapperArgs = ["--set DYLD_LIBRARY_PATH ${pkgs.dtc}/lib"];
       };
 
       packages.dtoc = pythonPkgs.buildPythonPackage {
@@ -248,6 +252,7 @@
         buildInputs = [pythonPkgs.setuptools];
       };
 
+      # TODO: local builds in your area
       devShells.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           zephyr-sdk
