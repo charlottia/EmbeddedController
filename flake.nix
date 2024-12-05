@@ -21,21 +21,12 @@
 
       devShells.default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          # pkgsCross.arm-embedded.buildPackages.gcc
           (zephyr-nix.packages.${system}.sdk-0_16.override {targets = ["arm-zephyr-eabi"];})
-          # gcc-arm-embedded
-          # gcc
-          # gnumake
-          # git-repo
-          # swig # or swig3?
           python312
           python312Packages.libfdt  # <- 311 version fails to build
           dtc
           cmake
-          file
           ninja
-          # wget
-          # uv
         ];
       };
     });
