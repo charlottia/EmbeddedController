@@ -57,61 +57,64 @@
         hash = "sha256-h5y0M1dupdO9CNG+OhUYi56UXsWAL5B0PTnhx+gU3FA=";
         fetchSubmodules = false;
       };
+
+      mkBuild = packages: build:
+        pkgs.stdenv.mkDerivation {
+          name = build;
+
+          srcs = [
+            ec
+            cmsis
+            zephyr
+          ];
+
+          sourceRoot = ".";
+
+          postPatch = ''
+            mkdir .repo
+
+            mkdir -p src/platform
+            mv ec src/platform/ec
+
+            mkdir -p src/third_party/zephyr
+            mv cmsis src/third_party/zephyr/cmsis
+
+            mkdir -p src/third_party/zephyr
+            mv zephyr src/third_party/zephyr/main
+          '';
+
+          nativeBuildInputs = [
+            zephyr-sdk
+            pkgs.cmake
+            pkgs.git
+            pkgs.ninja
+            pythonPkgs.pyyaml
+            pythonPkgs.pykwalify
+            pythonPkgs.packaging
+            pythonPkgs.pyelftools
+            pythonPkgs.colorama
+            packages.binman
+          ];
+
+          dontUseCmakeConfigure = true;
+
+          buildPhase = ''
+            ${packages.zmake}/bin/zmake -j8 build ${build} -DCMAKE_MAKE_PROGRAM="${pkgs.ninja}/bin/ninja" -DBUILD_VERSION=awawa
+          '';
+
+          installPhase = ''
+            mkdir $out
+            cp src/platform/ec/build/zephyr/${build}/output/* $out/
+          '';
+
+          dontFixup = true;
+        };
     in rec {
       formatter = pkgs.alejandra;
 
-      # TODO: generalise lotus v. azalea
       packages.default = packages.lotus;
-      packages.lotus = pkgs.stdenv.mkDerivation {
-        name = "lotus";
-        
-        srcs = [
-          ec
-          cmsis
-          zephyr
-        ];
-
-        sourceRoot = ".";
-
-        postPatch = ''
-          mkdir .repo
-
-          mkdir -p src/platform
-          mv ec src/platform/ec
-
-          mkdir -p src/third_party/zephyr
-          mv cmsis src/third_party/zephyr/cmsis
-
-          mkdir -p src/third_party/zephyr
-          mv zephyr src/third_party/zephyr/main
-        '';
-
-        nativeBuildInputs = [
-          zephyr-sdk
-          pkgs.cmake
-          pkgs.git
-          pkgs.ninja
-          pythonPkgs.pyyaml
-          pythonPkgs.pykwalify
-          pythonPkgs.packaging
-          pythonPkgs.pyelftools
-          pythonPkgs.colorama
-          packages.binman
-        ];
-
-        dontUseCmakeConfigure = true;
-
-        buildPhase = ''
-          ${packages.zmake}/bin/zmake -j8 build lotus -DCMAKE_MAKE_PROGRAM="${pkgs.ninja}/bin/ninja" -DBUILD_VERSION=awawa
-        '';
-
-        installPhase = ''
-          mkdir $out
-          cp src/platform/ec/build/zephyr/lotus/output/* $out/
-        '';
-
-        dontFixup = true;
-      };
+      packages.lotus = mkBuild packages "lotus";
+      packages.azalea = mkBuild packages "azalea";
 
       packages.zmake = pythonPkgs.buildPythonPackage {
         name = "zmake";
@@ -122,8 +125,8 @@
 
         postPatch = ''
           sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:${pkgs.gcc}/bin:${pkgs.dtc}/bin"${
-            if pkgs.stdenv.hostPlatform.isDarwin then
-              '',"DYLD_LIBRARY_PATH":"${pkgs.dtc}/lib"''
+            if pkgs.stdenv.hostPlatform.isDarwin
+            then '',"DYLD_LIBRARY_PATH":"${pkgs.dtc}/lib"''
             else ""
           }#' -i zmake/jobserver.py
         '';
