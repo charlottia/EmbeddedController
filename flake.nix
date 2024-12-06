@@ -58,6 +58,8 @@
         fetchSubmodules = false;
       };
 
+      build_version = "awawa";
+
       mkBuild = packages: build:
         pkgs.stdenv.mkDerivation {
           name = build;
@@ -99,7 +101,7 @@
           dontUseCmakeConfigure = true;
 
           buildPhase = ''
-            ${packages.zmake}/bin/zmake -j8 build ${build} -DCMAKE_MAKE_PROGRAM="${pkgs.ninja}/bin/ninja" -DBUILD_VERSION=awawa
+            ${packages.zmake}/bin/zmake -j8 build ${build} -DCMAKE_MAKE_PROGRAM="${pkgs.ninja}/bin/ninja" -DBUILD_VERSION="${build_version}"
           '';
 
           installPhase = ''
