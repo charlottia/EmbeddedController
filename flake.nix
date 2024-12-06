@@ -27,20 +27,6 @@
         sed -e 's/dynamic = "license"/dynamic = ["license"]/' -i pyproject.toml
       '';
 
-      pyelftools = pkgs.fetchgit {
-        name = "pyelftools";
-        url = "https://chromium.googlesource.com/chromiumos/third_party/pyelftools";
-        rev = "refs/heads/chromeos-0.22";
-        hash = "sha256-MArasbUre77vVGThaPxNotukIX+lGiNC4mhzZT52vl8=";
-      };
-
-      crosutils = pkgs.fetchgit {
-        name = "crosutils";
-        url = "https://chromium.googlesource.com/chromiumos/platform/crosutils";
-        rev = "refs/heads/main";
-        hash = "sha256-ahnXEetj99TLEocogZcSSUdj/r0QXiOw1OIVRrMt0cI=";
-      };
-
       ec = pkgs.fetchFromGitHub {
         name = "ec";
         owner = "FrameworkComputer";
@@ -56,13 +42,6 @@
         hash = "sha256-IKmdIn/K1eHBVxA0sNvzr1i5LpkgJQMAMsks13lmDNw=";
       };
 
-      hal_stm32 = pkgs.fetchgit {
-        name = "hal_stm32";
-        url = "https://chromium.googlesource.com/chromiumos/third_party/zephyr/hal_stm32";
-        rev = "refs/heads/chromeos-main";
-        hash = "sha256-r1aks0sgUrJeX8t2lO98sOtGjBMvHgt2St0am+qEz3E=";
-      };
-
       zephyr = pkgs.fetchFromGitHub {
         name = "zephyr";
         owner = "FrameworkComputer";
@@ -71,26 +50,12 @@
         hash = "sha256-KgTh39Ba9jDByv7+9gDdZHCl2OOku3Y3yxq0Pt4GeBo=";
       };
 
-      nanopb = pkgs.fetchgit {
-        name = "nanopb";
-        url = "https://chromium.googlesource.com/chromiumos/third_party/zephyr/nanopb";
-        rev = "refs/heads/main";
-        hash = "sha256-qt9ey7dbuqxIAhc4BKm0EqkMusOdsuQZNppmaN4ZVfA=";
-      };
-
       u-boot = pkgs.fetchgit {
         name = "u-boot";
         url = "https://chromium.googlesource.com/chromiumos/third_party/u-boot";
         rev = "refs/heads/upstream/next";
         hash = "sha256-h5y0M1dupdO9CNG+OhUYi56UXsWAL5B0PTnhx+gU3FA=";
         fetchSubmodules = false;
-      };
-
-      depot_tools = pkgs.fetchgit {
-        name = "depot_tools";
-        url = "https://chromium.googlesource.com/chromium/tools/depot_tools";
-        rev = "84edf22d0e5bf3f9ae60714ed9789fd62f86cf2a";
-        hash = "sha256-3t03DdZ+dRen1z3PTyGt2rDPHIHTe+qS8ek/bH4kuKo=";
       };
     in rec {
       formatter = pkgs.alejandra;
@@ -101,28 +66,15 @@
         name = "lotus";
         
         srcs = [
-          pyelftools
-          crosutils
           ec
           cmsis
-          hal_stm32
           zephyr
-          nanopb
-          u-boot
-          depot_tools
         ];
 
         sourceRoot = ".";
 
-        # TODO: see how much of the below we can remove and still get a build.
         postPatch = ''
           mkdir .repo
-
-          mkdir -p chromite/third_party
-          mv pyelftools chromite/third_party/pyelftools
-
-          mkdir -p src
-          mv crosutils src/scripts
 
           mkdir -p src/platform
           mv ec src/platform/ec
@@ -131,19 +83,7 @@
           mv cmsis src/third_party/zephyr/cmsis
 
           mkdir -p src/third_party/zephyr
-          mv hal_stm32 src/third_party/zephyr/hal_stm32
-
-          mkdir -p src/third_party/zephyr
           mv zephyr src/third_party/zephyr/main
-
-          mkdir -p src/third_party/zephyr
-          mv nanopb src/third_party/zephyr/nanopb
-
-          mkdir -p src/third_party/u-boot
-          mv u-boot src/third_party/u-boot/files
-
-          mkdir -p src/chromium
-          mv depot_tools src/chromium/depot_tools
         '';
 
         nativeBuildInputs = [
@@ -164,10 +104,13 @@
         buildPhase = ''
           ${packages.zmake}/bin/zmake -j8 build lotus -DCMAKE_MAKE_PROGRAM="${pkgs.ninja}/bin/ninja" -DBUILD_VERSION=awawa
         '';
+
         installPhase = ''
           mkdir $out
           cp src/platform/ec/build/zephyr/lotus/output/* $out/
         '';
+
+        dontFixup = true;
       };
 
       packages.zmake = pythonPkgs.buildPythonPackage {
@@ -177,10 +120,12 @@
         pyproject = true;
         build-system = [pythonPkgs.setuptools];
 
-        # The DYLD_LIBRARY_PATH part here is only needed for Darwin, but it
-        # doesn't harm Linux. TODO: don't do on Linux.
         postPatch = ''
-          sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:${pkgs.gcc}/bin:${pkgs.dtc}/bin","DYLD_LIBRARY_PATH":"${pkgs.dtc}/lib"#' -i zmake/jobserver.py
+          sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:${pkgs.gcc}/bin:${pkgs.dtc}/bin"${
+            if pkgs.stdenv.hostPlatform.isDarwin then
+              '',"DYLD_LIBRARY_PATH":"${pkgs.dtc}/lib"''
+            else ""
+          }#' -i zmake/jobserver.py
         '';
       };
 
