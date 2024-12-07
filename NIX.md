@@ -37,11 +37,11 @@ Loading Zephyr default modules (Zephyr base (cached)).
 /home/kivikakk/g/FrameworkEmbeddedController/build/zephyr/lotus/packer/source.dts:973.38-978.6: Warning (unique_unit_address): /soc-if/io_i2c_ctrl7_port0/ambient_f75303@4d: duplicate unit-address (also used in node /soc-if/io_i2c_ctrl7_port0/apu_f75303@4d)
 /home/kivikakk/g/FrameworkEmbeddedController/build/zephyr/lotus/packer/source.dts:979.38-984.6: Warning (unique_unit_address): /soc-if/io_i2c_ctrl7_port0/charger_f75303@4d: duplicate unit-address (also used in node /soc-if/io_i2c_ctrl7_port0/apu_f75303@4d)
 $ ls -l src/platform/ec/build/zephyr/lotus/output
-total 8332
--rw-r--r-- 1 kivikakk users  524288 dets   7 17:02 ec.bin
--rwxr-xr-x 1 kivikakk users     792 dets   7 17:02 npcx_monitor.bin
--rwxr-xr-x 1 kivikakk users 4000556 dets   7 17:02 zephyr.ro.elf
--rwxr-xr-x 1 kivikakk users 4000504 dets   7 17:02 zephyr.rw.elf
+total 8300
+-rw-r--r-- 1 kivikakk users  524288  7. dets  19:02 ec.bin
+-rwxr-xr-x 1 kivikakk users     792  7. dets  19:02 npcx_monitor.bin
+-rwxr-xr-x 1 kivikakk users 3981524  7. dets  19:02 zephyr.ro.elf
+-rwxr-xr-x 1 kivikakk users 3981480  7. dets  19:02 zephyr.rw.elf
 $
 ```
 
@@ -50,27 +50,27 @@ $
 ```console
 $ nix build .#lotus
 $ ls -l result
-lrwxrwxrwx 1 kivikakk users 49 dets   7 17:08 result -> /nix/store/2530fb2xcv4dnki6dsjbg11hydsbkvld-lotus
+lrwxrwxrwx 1 kivikakk users 49  7. dets  19:01 result -> /nix/store/z3y2aazb62yhp243rxvcjv7ijg1gvn2z-lotus
 $ ls -l result/
 total 8260
--r--r--r-- 1 root root  524288 jaan   1  1970 ec.bin
--r-xr-xr-x 1 root root     792 jaan   1  1970 npcx_monitor.bin
--r-xr-xr-x 1 root root 3961164 jaan   1  1970 zephyr.ro.elf
--r-xr-xr-x 1 root root 3961120 jaan   1  1970 zephyr.rw.elf
+-r--r--r-- 1 root root  524288  1. jaan   1970 ec.bin
+-r-xr-xr-x 1 root root     792  1. jaan   1970 npcx_monitor.bin
+-r-xr-xr-x 1 root root 3961164  1. jaan   1970 zephyr.ro.elf
+-r-xr-xr-x 1 root root 3961120  1. jaan   1970 zephyr.rw.elf
 ```
 
 (Or `.#azalea`.)
 
-## Build commit (checkout not required)
+## Build commit reproducibly (checkout not required)
 
 ```console
-$ nix build 'github:charlottia/FrameworkEmbeddedController?rev=84e4ed243f3d17f97b2dc89924d3c71aef8c2a28#lotus'
+$ nix build 'github:charlottia/FrameworkEmbeddedController?rev=fddec6d5accd7b5d08c2d6654f38bc458175e897#lotus'
 $ ls -l result
-lrwxrwxrwx 1 kivikakk users 49 dets   7 17:10 result -> /nix/store/c32jydxf53vqgc99468b5fdqs1d1vdwn-lotus
+lrwxrwxrwx 1 kivikakk users 49  7. dets  19:00 result -> /nix/store/z3y2aazb62yhp243rxvcjv7ijg1gvn2z-lotus
 $ ls -l result/
 total 8260
--r--r--r-- 1 root root  524288 jaan   1  1970 ec.bin
--r-xr-xr-x 1 root root     792 jaan   1  1970 npcx_monitor.bin
--r-xr-xr-x 1 root root 3961164 jaan   1  1970 zephyr.ro.elf
--r-xr-xr-x 1 root root 3961120 jaan   1  1970 zephyr.rw.elf
+-r--r--r-- 1 root root  524288  1. jaan   1970 ec.bin
+-r-xr-xr-x 1 root root     792  1. jaan   1970 npcx_monitor.bin
+-r-xr-xr-x 1 root root 3961164  1. jaan   1970 zephyr.ro.elf
+-r-xr-xr-x 1 root root 3961120  1. jaan   1970 zephyr.rw.elf
 ```
