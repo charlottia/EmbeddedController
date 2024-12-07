@@ -1,4 +1,6 @@
 /result
+/src
+# ^-- added in nix fork
 build/
 /private*/
 # A "local" directory for hiding scripts and artifacts from git.

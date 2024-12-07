@@ -53,7 +53,7 @@
             "${zephyr}?zephyr"
           ];
 
-          preUnpack=''
+          preUnpack = ''
             unpackCmdHooks+=(_unpack_named)
             _unpack_named() {
               local src="$1"
@@ -95,7 +95,7 @@
           dontUseCmakeConfigure = true;
 
           buildPhase = ''
-            ${packages.zmake}/bin/zmake -j8 build ${build} -DCMAKE_MAKE_PROGRAM="${pkgs.ninja}/bin/ninja" -DBUILD_VERSION="${build_version}"
+            ${packages.zmake}/bin/zmake -j8 build ${build}
           '';
 
           installPhase = ''
@@ -120,7 +120,7 @@
         build-system = [pythonPkgs.setuptools];
 
         postPatch = ''
-          sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:${pkgs.gcc}/bin:${pkgs.dtc}/bin"${
+          sed -e 's#"/bin:/usr/bin"#"/bin:/usr/bin:${pkgs.gcc}/bin:${pkgs.dtc}/bin:${pkgs.ninja}/bin"${
             if pkgs.stdenv.hostPlatform.isDarwin
             then '',"DYLD_LIBRARY_PATH":"${pkgs.dtc}/lib"''
             else ""
@@ -196,22 +196,30 @@
         buildInputs = [pythonPkgs.setuptools];
       };
 
-      # TODO: local builds in your area
       devShells.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
+        buildInputs = [
           zephyr-sdk
-          python
+          pkgs.cmake
+          pkgs.git
+          pkgs.ninja
           pythonPkgs.pyyaml
           pythonPkgs.pykwalify
           pythonPkgs.packaging
           pythonPkgs.pyelftools
           pythonPkgs.colorama
           pythonPkgs.setuptools
-          pythonPkgs.libfdt
-          dtc
-          cmake
-          ninja
+          packages.zmake
+          packages.binman
         ];
+        
+        shellHook = ''
+          rm -rf src
+          mkdir -p src/platform
+          ln -fs ../.. src/platform/ec
+          mkdir -p src/third_party/zephyr
+          ln -fs ${cmsis} src/third_party/zephyr/cmsis
+          ln -fs ${zephyr} src/third_party/zephyr/main
+        '';
       };
     });
 }
