@@ -6,6 +6,15 @@
 
     zephyr-nix.url = github:adisbladis/zephyr-nix;
     zephyr-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    cmsis.url = git+https://chromium.googlesource.com/chromiumos/third_party/zephyr/cmsis?rev=4aa3ff8e4f8a21e31cd9831b943acb7a7cd56ac8&name=cmsis;
+    cmsis.flake = false;
+
+    zephyr.url = github:FrameworkComputer/zephyr?ref=lotus-zephyr&name=zephyr;
+    zephyr.flake = false;
+
+    u-boot.url = git+https://chromium.googlesource.com/chromiumos/third_party/u-boot?ref=upstream/next&name=u-boot;
+    u-boot.flake = false;
   };
 
   outputs = {
@@ -13,6 +22,9 @@
     nixpkgs,
     flake-utils,
     zephyr-nix,
+    zephyr,
+    cmsis,
+    u-boot,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
@@ -27,36 +39,7 @@
         sed -e 's/dynamic = "license"/dynamic = ["license"]/' -i pyproject.toml
       '';
 
-      ec = pkgs.fetchFromGitHub {
-        name = "ec";
-        owner = "FrameworkComputer";
-        repo = "EmbeddedController";
-        rev = "fwk-lotus-azalea-19573";
-        hash = "sha256-37iKyZdOy8K/a8fsvaTjiC9cTkcP0JbvsfB7t1XAIco=";
-      };
-
-      cmsis = pkgs.fetchgit {
-        name = "cmsis";
-        url = "https://chromium.googlesource.com/chromiumos/third_party/zephyr/cmsis";
-        rev = "4aa3ff8e4f8a21e31cd9831b943acb7a7cd56ac8";
-        hash = "sha256-IKmdIn/K1eHBVxA0sNvzr1i5LpkgJQMAMsks13lmDNw=";
-      };
-
-      zephyr = pkgs.fetchFromGitHub {
-        name = "zephyr";
-        owner = "FrameworkComputer";
-        repo = "zephyr";
-        rev = "lotus-zephyr";
-        hash = "sha256-KgTh39Ba9jDByv7+9gDdZHCl2OOku3Y3yxq0Pt4GeBo=";
-      };
-
-      u-boot = pkgs.fetchgit {
-        name = "u-boot";
-        url = "https://chromium.googlesource.com/chromiumos/third_party/u-boot";
-        rev = "refs/heads/upstream/next";
-        hash = "sha256-h5y0M1dupdO9CNG+OhUYi56UXsWAL5B0PTnhx+gU3FA=";
-        fetchSubmodules = false;
-      };
+      ec = ./.;
 
       build_version = "awawa";
 
@@ -65,10 +48,21 @@
           name = build;
 
           srcs = [
-            ec
-            cmsis
-            zephyr
+            "${ec}?ec"
+            "${cmsis}?cmsis"
+            "${zephyr}?zephyr"
           ];
+
+          preUnpack=''
+            unpackCmdHooks+=(_unpack_named)
+            _unpack_named() {
+              local src="$1"
+              if ! [[ "$src" =~ ^(.*)\?([a-z]+)$ ]]; then return 1; fi
+              local path="''${BASH_REMATCH[1]}"
+              local name="''${BASH_REMATCH[2]}"
+              cp -pr --reflink=auto -- "$path" "$name"
+            }
+          '';
 
           sourceRoot = ".";
 
@@ -120,8 +114,8 @@
 
       packages.zmake = pythonPkgs.buildPythonPackage {
         name = "zmake";
-        src = ec;
-        sourceRoot = "ec/zephyr/zmake";
+        src = "${ec}/zephyr/zmake";
+
         pyproject = true;
         build-system = [pythonPkgs.setuptools];
 
@@ -140,10 +134,6 @@
         pyproject = false;
         build-system = [pythonPkgs.setuptools];
 
-        # zmake calls (sys.executable, path-to-binman, ...) on purpose, so we
-        # can't wrap it. This makes it unsuitable for calling directly, however.
-        dontWrapPythonPrograms = true;
-
         buildInputs = [
           pythonPkgs.pypaBuildHook
           pythonPkgs.pipInstallHook
@@ -160,6 +150,10 @@
           sed -e 's/"pylibfdt"/"libfdt"/' -i pyproject.toml
           ${setProjectDynamicToLicense}
         '';
+
+        # zmake calls (sys.executable, path-to-binman, ...) on purpose, so we
+        # can't wrap it. This makes it unsuitable for calling directly, however.
+        dontWrapPythonPrograms = true;
 
         # No wrapper => no need for args. I'd like to be able to still do this
         # to have a nicer binman derivation.

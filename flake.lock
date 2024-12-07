@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "cmsis": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1667999874,
+        "narHash": "sha256-IKmdIn/K1eHBVxA0sNvzr1i5LpkgJQMAMsks13lmDNw=",
+        "ref": "4aa3ff8e4f8a21e31cd9831b943acb7a7cd56ac8",
+        "rev": "4aa3ff8e4f8a21e31cd9831b943acb7a7cd56ac8",
+        "revCount": 32,
+        "type": "git",
+        "url": "https://chromium.googlesource.com/chromiumos/third_party/zephyr/cmsis?name=cmsis"
+      },
+      "original": {
+        "rev": "4aa3ff8e4f8a21e31cd9831b943acb7a7cd56ac8",
+        "type": "git",
+        "url": "https://chromium.googlesource.com/chromiumos/third_party/zephyr/cmsis?name=cmsis"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -76,8 +93,11 @@
     },
     "root": {
       "inputs": {
+        "cmsis": "cmsis",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
+        "u-boot": "u-boot",
+        "zephyr": "zephyr",
         "zephyr-nix": "zephyr-nix"
       }
     },
@@ -96,7 +116,64 @@
         "type": "github"
       }
     },
+    "u-boot": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1733524766,
+        "narHash": "sha256-aJ/azDsQAmGyGQ4M9krj7E6IUHKWfMwp5y2M5mVbgeU=",
+        "ref": "upstream/next",
+        "rev": "39759bf9fe3a5b6d4788164fc046f5f8aee5cbff",
+        "revCount": 96674,
+        "type": "git",
+        "url": "https://chromium.googlesource.com/chromiumos/third_party/u-boot?name=u-boot"
+      },
+      "original": {
+        "ref": "upstream/next",
+        "type": "git",
+        "url": "https://chromium.googlesource.com/chromiumos/third_party/u-boot?name=u-boot"
+      }
+    },
     "zephyr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1702014141,
+        "narHash": "sha256-KgTh39Ba9jDByv7+9gDdZHCl2OOku3Y3yxq0Pt4GeBo=",
+        "owner": "FrameworkComputer",
+        "repo": "zephyr",
+        "rev": "7b88e177ba900ce45495a7a49af7148baf3348ee",
+        "type": "github"
+      },
+      "original": {
+        "owner": "FrameworkComputer",
+        "ref": "lotus-zephyr",
+        "repo": "zephyr",
+        "type": "github"
+      }
+    },
+    "zephyr-nix": {
+      "inputs": {
+        "nix-github-actions": "nix-github-actions",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "pyproject-nix": "pyproject-nix",
+        "zephyr": "zephyr_2"
+      },
+      "locked": {
+        "lastModified": 1731288812,
+        "narHash": "sha256-lFY/q8f6fZYZNHHshUUqgi92BsHIwgoVtqXIFa8zhxE=",
+        "owner": "adisbladis",
+        "repo": "zephyr-nix",
+        "rev": "d54fd58912e8d3f5787c01831ccefd0349bfdd0e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "adisbladis",
+        "repo": "zephyr-nix",
+        "type": "github"
+      }
+    },
+    "zephyr_2": {
       "flake": false,
       "locked": {
         "lastModified": 1721992675,
@@ -110,29 +187,6 @@
         "owner": "zephyrproject-rtos",
         "ref": "v3.7.0",
         "repo": "zephyr",
-        "type": "github"
-      }
-    },
-    "zephyr-nix": {
-      "inputs": {
-        "nix-github-actions": "nix-github-actions",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "pyproject-nix": "pyproject-nix",
-        "zephyr": "zephyr"
-      },
-      "locked": {
-        "lastModified": 1731288812,
-        "narHash": "sha256-lFY/q8f6fZYZNHHshUUqgi92BsHIwgoVtqXIFa8zhxE=",
-        "owner": "adisbladis",
-        "repo": "zephyr-nix",
-        "rev": "d54fd58912e8d3f5787c01831ccefd0349bfdd0e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "adisbladis",
-        "repo": "zephyr-nix",
         "type": "github"
       }
     }
