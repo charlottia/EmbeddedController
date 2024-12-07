@@ -197,6 +197,8 @@
       };
 
       devShells.default = pkgs.mkShell {
+        name = "EmbeddedController";
+
         buildInputs = [
           zephyr-sdk
           pkgs.cmake
@@ -213,6 +215,8 @@
         ];
         
         shellHook = ''
+          mkdir -p .repo
+          
           rm -rf src
           mkdir -p src/platform
           ln -fs ../.. src/platform/ec
